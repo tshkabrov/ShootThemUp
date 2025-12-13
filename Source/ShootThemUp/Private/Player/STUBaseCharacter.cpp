@@ -42,14 +42,17 @@ void ASTUBaseCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	
 	PlayerInputComponent->BindAxis("PlayerMoveForward", this, &ASTUBaseCharacter::PlayerMoveForward);
 	PlayerInputComponent->BindAxis("PlayerMoveRight", this, &ASTUBaseCharacter::PlayerMoveRight);
-
 	PlayerInputComponent->BindAxis("PlayerLookUp", this, &ASTUBaseCharacter::PlayerLookUp);
 	PlayerInputComponent->BindAxis("PlayerTurnAround", this, &ASTUBaseCharacter::PlayerTurnAround);
+	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ASTUBaseCharacter::Jump);
+	PlayerInputComponent->BindAction("Sprint", IE_Pressed, this, &ASTUBaseCharacter::OnStartSprint);
+	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &ASTUBaseCharacter::OnStopSprint);
 
 }
 
 void ASTUBaseCharacter::PlayerMoveForward(float Amount)
 {
+	IsMovingForward = Amount > 0.0f;
 	AddMovementInput(GetActorForwardVector(), Amount);
 }
 
@@ -68,3 +71,16 @@ void ASTUBaseCharacter::PlayerTurnAround(float Amount)
 	AddControllerYawInput(Amount);
 }
 
+void ASTUBaseCharacter::OnStartSprint()
+{
+	IsWantsToSpring = true;
+}
+
+void ASTUBaseCharacter::OnStopSprint()
+{
+	IsWantsToSpring = false;
+}
+
+bool ASTUBaseCharacter::IsSprinting() const {
+	return IsWantsToSpring && IsMovingForward && !GetVelocity().IsZero();
+}
